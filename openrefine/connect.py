@@ -14,7 +14,11 @@ class ServerConnection:
             r = requests.get(url=self.base_url)
         except requests.exceptions.ConnectionError:
             raise ConnectionError("Connection refused on current configuration. Is OpenRefine running on the host and port configured?")
-    
+
+    def _get_token(self):
+        r = requests.get(f"{self.base_url}/command/core/get-csrf-token?project={self.pid}").json()
+        return r['token']
+
     def list_projects(self):
         self._connect_to_openrefine()
         res_data = requests.get(url=f"{self.base_url}/{self.existing_projects}").json()
@@ -28,6 +32,8 @@ class ExistingProject(ServerConnection):
         super().__init__()
         self.pid = pid
         self.project = self.list_projects()[self.pid]
+        if not self.project:
+            raise ProjectDoesNotExistError("The project does not exist; Are you using the correct project id?")
         self.name = self.project['name']
         self.created_date = self.project['created']
         self.modified_date = self.project['modified']
