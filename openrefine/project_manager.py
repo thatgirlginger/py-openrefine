@@ -7,3 +7,6 @@ class ProjectMetadata(ExistingProject):
     def __init__(self, pid):
         super().__init__(pid)
         self.csrf = self._get_token()
+
+    def get_models(self):
+        
