@@ -2,7 +2,9 @@ import datetime
 import requests
 import os
 
-from exceptions import ConnectionError, ProjectDoesNotExistError 
+from exceptions import ConnectionError, ProjectDoesNotExistError
+
+#alternate method: create project 'session' when initializing class?
 
 class ServerConnection:
     def __init__(self, host='127.0.0.1', port=3333):
@@ -14,10 +16,6 @@ class ServerConnection:
             r = requests.get(url=self.base_url)
         except requests.exceptions.ConnectionError:
             raise ConnectionError("Connection refused on current configuration. Is OpenRefine running on the host and port configured?")
-
-    def _get_token(self):
-        r = requests.get(f"{self.base_url}/command/core/get-csrf-token?project={self.pid}").json()
-        return r['token']
 
     def list_projects(self):
         self._connect_to_openrefine()
@@ -43,6 +41,10 @@ class ExistingProject(ServerConnection):
         self.contributors = self.project['contributors']
         self.subject = self.project['subject']
         self.rowcount = self.project['rowCount']
+
+    def _get_token(self):
+        r = requests.get(f"{self.base_url}/command/core/get-csrf-token?project={self.pid}").json()
+        return r['token']
 
     def open_project(self):
         return requests.get(url=f"{self.base_url}/project?project={self.pid}")
